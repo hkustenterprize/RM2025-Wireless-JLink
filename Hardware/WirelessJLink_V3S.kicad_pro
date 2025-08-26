@@ -64,12 +64,6 @@
         "copper_edge_clearance|168274999|95050001|42f478f5-3441-445c-979e-9596407c16da|4253d1b0-eeee-4e56-85d0-17303bba8102",
         "copper_edge_clearance|177124999|95050001|42f478f5-3441-445c-979e-9596407c16da|07c969c2-ffa7-4a13-914e-2e4d657a21a4",
         "copper_edge_clearance|177675000|108225000|42f478f5-3441-445c-979e-9596407c16da|93aa44ae-d19e-4712-a2a8-8d6ab155b3cc",
-        "courtyards_overlap|144400001|98850001|02faf4ec-33ab-4a1b-9479-1c2d1ff06e64|70d4a63f-38a0-41f4-a69d-1a237c63e75b",
-        "courtyards_overlap|144499999|100612501|bad55c81-8103-4667-ad3b-ce47d760124a|70d4a63f-38a0-41f4-a69d-1a237c63e75b",
-        "courtyards_overlap|151470001|100920001|400445fb-f01f-4fa6-885c-3ee28322cab4|fb9575b6-18d8-47b8-8bb4-67186e80504b",
-        "courtyards_overlap|153962501|94850001|e6a6607a-e28f-4c32-b75f-601817c860c2|3f66c823-fa3c-4ebb-8491-48a610c73906",
-        "courtyards_overlap|157300001|95070001|c5670eb5-d831-4030-9660-6c8fa809f96c|f8b52a97-be47-4a09-b3f7-72b9fc5db37d",
-        "courtyards_overlap|159558359|105670001|42d05044-1c1a-4f3d-9ffd-116fe0c5b4af|d06835bb-5914-4a06-979b-a3b2d56bb392",
         "courtyards_overlap|159679999|102770001|61ffeb43-5cbe-42cd-9c9d-99114d8d641a|ca26f5d4-0be3-46a0-869e-316b711461b7",
         "courtyards_overlap|160220001|131170001|5e7f3848-3748-4e27-9c43-74550b023e47|bc636644-8530-4dd0-9d89-12497ddaca9a",
         "courtyards_overlap|166570001|98220001|3a3f9f6d-0b0c-47b5-8253-1967f74c0ec4|454fd61e-a570-4044-93ac-e6bbaf0a99bb",
@@ -455,7 +449,7 @@
       "global_label_dangling": "warning",
       "hier_label_mismatch": "error",
       "label_dangling": "error",
-      "lib_symbol_issues": "warning",
+      "lib_symbol_issues": "ignore",
       "missing_bidi_pin": "warning",
       "missing_input_pin": "warning",
       "missing_power_pin": "error",
@@ -627,7 +621,7 @@
   "sheets": [
     [
       "4f0ceb5b-c471-43d6-ac29-a3047f7cdcea",
-      ""
+      "根目录"
     ]
   ],
   "text_variables": {}
