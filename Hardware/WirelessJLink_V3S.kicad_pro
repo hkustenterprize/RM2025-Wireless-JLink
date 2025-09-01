@@ -37,9 +37,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 1.8,
-          "height": 3.0,
-          "width": 3.0
+          "drill": 0.0,
+          "height": 2.0,
+          "width": 1.5
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.1,
         "silk_text_upright": false,
         "zones": {
-          "min_clearance": 0.254
+          "min_clearance": 0.15
         }
       },
       "diff_pair_dimensions": [
@@ -58,17 +58,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "copper_edge_clearance|140620000|134040000|42f478f5-3441-445c-979e-9596407c16da|d6824627-98d8-44fc-b516-331633440902",
-        "copper_edge_clearance|144550000|134040000|42f478f5-3441-445c-979e-9596407c16da|baf2a3c3-e078-48b9-81a4-8533919eaeba",
-        "copper_edge_clearance|168274999|95050001|42f478f5-3441-445c-979e-9596407c16da|4253d1b0-eeee-4e56-85d0-17303bba8102",
-        "copper_edge_clearance|177124999|95050001|42f478f5-3441-445c-979e-9596407c16da|07c969c2-ffa7-4a13-914e-2e4d657a21a4",
-        "copper_edge_clearance|177675000|108225000|42f478f5-3441-445c-979e-9596407c16da|93aa44ae-d19e-4712-a2a8-8d6ab155b3cc",
-        "courtyards_overlap|159679999|102770001|61ffeb43-5cbe-42cd-9c9d-99114d8d641a|ca26f5d4-0be3-46a0-869e-316b711461b7",
-        "courtyards_overlap|160220001|131170001|5e7f3848-3748-4e27-9c43-74550b023e47|bc636644-8530-4dd0-9d89-12497ddaca9a",
-        "courtyards_overlap|166570001|98220001|3a3f9f6d-0b0c-47b5-8253-1967f74c0ec4|454fd61e-a570-4044-93ac-e6bbaf0a99bb",
-        "courtyards_overlap|174329999|127754999|757f928c-60a5-46d0-be3d-d13003947ebe|e7ee13a0-f106-45f4-a364-6f0a3afbe070"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -190,7 +180,7 @@
       "track_widths": [
         0.0,
         0.0,
-        0.0,
+        0.1524,
         0.2032,
         0.24892,
         0.254,
@@ -236,11 +226,11 @@
         },
         {
           "diameter": 0.5,
-          "drill": 0.25
+          "drill": 0.3
         },
         {
           "diameter": 0.6,
-          "drill": 0.3
+          "drill": 0.4
         }
       ],
       "zones_allow_external_fillets": true
