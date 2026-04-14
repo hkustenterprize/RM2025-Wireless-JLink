@@ -52,7 +52,7 @@
 # 软件框架
 固件主要包含三个部分, UBoot, Linux Kernel, Buildroot. 
 - **UBoot** 为 bootloader, 其功能是初始化 ddr, 初始化时钟等. 同时, UBoot 会从引导介质, 如 TF 卡, SPI Flash, NAND Flash 等处搜索可启动的介质, 并从中加载 Kernal 并运行. 同时也会向内核传递一些启动参数. 详见后文 Uboot 编译部分.
-- **Kernel** 即内核, 本质是一个巨大的程序. 负责管理计算机硬件资源，并为应用程序提供接口.
+- **Kernel** 即内核, 本质是一个巨大的程序. 负责管理计算机硬件资源, 并为应用程序提供接口.
 - **Buildroot** 用来构建根文件系统. 即构建我们在根目录下看到的 /var, /opt 等文件夹. 
 
 你可以跟着下文一步步进行配置编译与烧录.
@@ -116,9 +116,9 @@ make ARCH=arm menuconfig
 什么是 menuconfig: 是一个基于 **文本界面** 的配置工具, 终端的字符由文本绘制而成. make 通过读取目录下 **Kconfig** 文件, 并根据 Kconfig 的描述内容生成一个图形化参数配置界面. 当保存退出之后, 配置文件会保存在目录下的 **.config** 文件中.
 - 使用上下左右方向键可移动光标, 回车进入, ESC 返回上一级菜单或退出.
 - 对于 checkbox 类型配置, 使用空格键切换启用功能或禁用功能:
-- [ ]/< >： 该功能未被启用。
-- [\*]/<\*>： 该功能将被编译进内核。
-- [M]： 该功能将被编译为独立的模块。
+- [ ]/< >:  该功能未被启用。
+- [\*]/<\*>:  该功能将被编译进内核。
+- [M]:  该功能将被编译为独立的模块。
 
 ---
 
@@ -147,7 +147,7 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j8
 
 可以在 U-Boot 的 menuconfig 里设置这些启动参数, 但需要修改这些参数则需重新编译烧录 U-Boot 较为麻烦.
 
-我们在这里不修改 boot-args 和 boot-cmd， 我们选择生成一个 boot.scr 文件， 然后直接用文件管理器复制到制定分区， 而不作为 uboot 的一部分编译到 u-boot 里。 这两个参数是环境变量， 作用是告诉 uboot 在什么地址加载内核和文件树。U-Boot 会在你的第一启动分区（fat32/exfat）中寻找boot.scr文件，作为启动参数选项。在这个文件中，可以定义一些给内核传递的参数，以及文件加载及启动的命令选项
+我们在这里不修改 boot-args 和 boot-cmd, 我们选择生成一个 boot.scr 文件, 然后直接用文件管理器复制到制定分区, 而不作为 uboot 的一部分编译到 u-boot 里。 这两个参数是环境变量, 作用是告诉 uboot 在什么地址加载内核和文件树。U-Boot 会在你的第一启动分区（fat32/exfat）中寻找boot.scr文件, 作为启动参数选项。在这个文件中, 可以定义一些给内核传递的参数, 以及文件加载及启动的命令选项
 ```bash
 setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 earlyprintk rw
 load mmc 0:1 0x41000000 zImage
@@ -156,14 +156,272 @@ bootz 0x41000000 - 0x41800000
 ```
 
 ### Trouble Shooting
-make menuconfig 时可能会报错 fatal error: curses.h: No such file or directory，则需要安装支持环境:
+make menuconfig 时可能会报错 fatal error: curses.h: No such file or directory, 则需要安装支持环境:
 
 ```bash
 sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
 
 ## TF 卡分区
+建议使用 512MByte 或以上的 TF 卡. 需要将 TF 卡分区并格式化为如下分区形式:
+
+共分三个部分: 
+1. 预留 10MB 的未分配空间, 用于存储 U-Boot. 需要使用 dd 命令将 U-Boot 直接写入指定区域. V3S 在启动过程中会读取固定的地址判断 TF 卡是否有可启动的固件.
+2. **第一分区**: 大小为 11MByte. FAT16 文件系统. 用于存储 boot.scr, linux kernel, .dtb 文件进来。
+3. **第二分区**: 剩余所有的是 EXT4 分区, 用于存储 rootfs。
+
+注意, TF 卡分区过程中会清除所有数据. 请谨慎操作. 相关命令如下:
+
+```bash
+# 根据实际 mount 到的位置调整
+umount /dev/sdb
+umount /dev/sdb1
+
+sudo fdisk /dev/sdb
+# 新建分区, 依次按如下的键
+n p 1(默认) 10240 +11M
+n p 2(默认) 32768 默认
+
+# 退出
+w
+```
+
+最后得到如下两个分区: 
+设备       启动  起点     末尾     扇区  大小 Id 类型
+/dev/sdb1       10240    32767    22528   11M 83 Linux
+/dev/sdb2       32768 15359999 15327232  7.3G 83 Linux
+
+---
+
+格式化分区: 
+```bash
+sudo mkfs.vfat /dev/sdb1 # 将第一分区格式化成 FAT
+sudo mkfs.ext4 /dev/sdb2 # 将第二分区格式化成 EXT4
+```
+
+**烧录命令**
+```bash
+# 烧录 U-Boot
+sudo dd if=~/V3S/u-boot/u-boot-sunxi-with-spl.bin of=/dev/sdb bs=1024 seek=8
+
+
+# 烧录 rootfs
+# 查看磁盘名称
+df -h 
+# 把 buildroot 产生的 rootfs.tar 解压到第二分区根目录
+# 第二分区路径类似于: /media/yourName/51b395d3-1622-41af-aee4-0f25b7cf09d0
+sudo tar xvf ~/V3S/buildroot-2019.08/output/images/rootfs.tar -C /第二分区路径
+
+# cd 到 TF 卡内, 并直接 chmod, 防止在启动时报权限错误
+cd /第二分区路径
+chmod 777 R .
+```
 
 ## Linux Kernel
+**拉取内核**
+我们使用 5.2.0 内核. 我们想使用 Lichee-Pi 配好的 Kernel Config 模版, 因此我们拉取 Lichee-Pi 的 Linux Kernel 仓库:
+
+```bash
+# 拉取 zero-5.2.y 单层分支
+git clone -b zero-5.2.y --depth 1 https://github.com/Lichee-Pi/linux.git
+```
+
+使用 licheepi_zero_defconfig 作为初始的配置, 并可根据需要修改其他配置.
+```bash
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out licheepi_zero_defconfig
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out menuconfig
+```
+
+**修改内核配置以支持无线网卡**
+在 menuconfig 内, 可修改打进内核的驱动, 网卡驱动等.
+
+```bash
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out menuconfig
+```
+
+1. 使能无线相关配置
+注意， 这两个在 licheepi_zero_defconfig 里是以 Module 形式存在的 `[M]` ， 我们把它打包进内核 `[*]`
+```
+Networking support
+	Wireless
+		[*] cfg80211 - wireless configuration API
+		[*] Generic IEEE 802.11 Networking Stack (mac80211)
+```
+
+2. 使能 rtl8723 驱动
+使用 licheepi_zero_defconfig 时已经使能了 rtl8723 驱动了。
+需要注意的是， rtl8723 必须以模块 Module 的形式编译，形成 .ko 文件， 然后手动复制到根文件系统, 并在启动后使用 insmod 加载.
+编译命令:
+
+```bash
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out -j16 modules
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out -j16 modules_install
+```
+
+编译出来的 r8723bs.ko 在：
+./linux/out/lib/modules/5.2.0-licheepi-zero+/kernel/drivers/staging/rtl8723bs/r8723bs.ko
+后文会将此文件放到根文件系统内.
+
+**修改设备树**
+我们在 sun8i-v3s-licheepi-zero-dock.dts 的基础上进行修改.
+`[TODO]` 具体如何修改 dts
+
+**编译内核**
+```bash
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out -j16
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out -j16 modules
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out -j16 modules_install
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out -j16 dtbs
+```
+
+然后手动复制如下文件到 SD 卡第一个分区:
+./linux/arch/arm/boot/zImage
+./linux/arch/arm/boot/dts/sun8i-v3s-licheepi-zero-dock.dtb
 
 ## Buildroot
+Buildroot 用于编译出根文件系统. 在 Linux 系统上看到 / 根目录下所有的文件就是根文件系统. 包含了系统运行所需的所有外围部分.
+荔枝派对此处并未做详细描述. 因此我们使用 2019.08 版本的 Buildroot 从零手动配置.
+
+**下载 buildroot 并解压**
+```bash
+wget https://buildroot.org/downloads/buildroot-2019.08.tar.gz
+tar xvf buildroot-2019.08.tar.gz&&cd buildroot-2019.08/
+```
+
+**配置 Buildroot**
+```bash
+make menuconfig
+```
+
+1. **配置 Target options**
+```
+Target options  --->
+	Target Architecture (ARM (little endian))  --->
+	Target Binary Format (ELF)  --->
+	Target Architecture Variant (cortex-A7)  --->
+	Target ABI (EABIhf)  --->
+	Floating point strategy (VFPv4-D16)  --->
+	ARM instruction set (ARM)  ---> 
+```
+
+
+2. **配置工具链 Toolchain**
+1. 查看工具链地址： which arm-linux-gnueabihf-g++
+/opt/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf/bin
+然后填入/opt/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf
+
+2. 查看 arm-linux-gnueabihf 版本
+/opt/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc --version
+得到 6.3.1
+
+3. 查看 Linux kernel headers 版本： /opt/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include/linux/version.h
+查看到十进制的版本号为 262144，16 进制表达为 0x40600，则对应的内核版本号为4.6.0。
+
+最后结果为：
+```
+Toolchain  --->
+	Toolchain type (External toolchain)  --->
+	*** Toolchain External Options ***
+	Toolchain (Custom toolchain)  --->
+	Toolchain origin (Pre-installed toolchain)  --->
+	(/opt/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf) Toolchain path
+	(arm-linux-gnueabihf) Toolchain prefix
+	External toolchain gcc version (6.x)  --->
+	External toolchain kernel headers series (2.6.x)  --->
+	External toolchain C library (glibc/eglibc)  --->
+	[*] Toolchain has SSP support? (NEW)
+	[*] Toolchain has RPC support? (NEW)
+	[*] Toolchain has C++ support? 
+	[*] Enable MMU support (NEW) 
+```
+
+3. **配置 System configuration**
+Init system：这里选择busybox，轻量级使用非常广泛。可选的有systemV,systemd.
+
+同时， 我们根据 buildroot 自带的 licheepi_zero_defconfig, 配置了串口
+```
+(RM2025) System hostname
+(xxx) System banner
+    Init system (BusyBox)
+[*] Enable root login with password
+(baoqi) Root password
+
+[*] Run a getty (login prompt) after boot --->
+    (ttyS0) TTY port
+        Baudrate (115200)
+```
+
+
+4. **配置 Target package**
+
+我们想使用 udevadm 工具配置 jlink usb 驱动， 所以要把 eudev 打包进 buildroot。
+进行如下修改：
+
+```
+System configuration
+	/dev management (Dynamic using devtmpfs + eudev)
+
+Target package
+	Hardware Handling
+		[*] eudev
+		后面两个也开了
+```
+
+这样就能在运行时修改规则 rules 了
+
+
+5. **配置 Filesystem images**
+根据 buildroot 自带的 licheepi_zero_defconfig, 使能了 ext4 support
+```
+[*] ext2/3/4 root filesystem
+    ext2/3/4 variant (ext4)  --->
+```
+
+---
+
+配置完之后， 我们保存并退出 menuconfig. 执行 `make` 编译.
+注意 buildroot **不支持** 多线程编译. 在 intel 13900 平台上编译用时约 20min.
+编译完成后得到 ./output/images/rootfs.tar 我们把 rootfs.tar 解压到 TF 卡的第二分区:
+
+
+```bash
+# 烧录 rootfs
+# 查看磁盘名称
+df -h 
+# 把 buildroot 产生的 rootfs.tar 解压到第二分区根目录
+# 第二分区路径类似于: /media/yourName/51b395d3-1622-41af-aee4-0f25b7cf09d0
+sudo tar xvf ~/V3S/buildroot-2019.08/output/images/rootfs.tar -C /第二分区路径
+
+# cd 到 TF 卡内, 并直接 chmod, 防止在启动时报权限错误
+cd /第二分区路径
+chmod 777 R .
+```
+
+---
+
+**在根文件目录中配置 Wifi 模块驱动**
+上文我们在编译 Linux 内核过程中得到了 r8723bs.ko 驱动模块. 我们需要将其手动复制到 TF 卡的指定位置并在运行后执行命令加载它.
+建议将 r8723bs.ko 复制到 TF 卡的 /lib/moduels/r8723bs.ko
+
+```bash
+cd /TF卡第二分区路径/lib
+sudo mkdir modules
+sudo chmod 777 ./modules
+cp ~/V3S/linux/out/lib/modules/5.2.0-licheepi-zero+/kernel/drivers/staging/rtl8723bs/r8723bs.ko ./moduels
+```
+
+rtl8723 Wifi 模块没有固件存储空间, 因此每次在系统启动后, 都需要通过 SDIO 接口往 rtl8723 Wifi 模块里加载固件:
+下载地址: https://github.com/ferbar/rtl8723bs/blob/master/rtl8723bs_nic.bin
+
+将 WiFi 固件 rtl8723bs_nic.bin 拷到根文件系统分区 /lib/firmware/rtlwifi 目录下
+```bash
+cd /TF卡第二分区路径/lib
+sudo mkdir firmware
+sudo mkdir firmware/rtlwifi
+sudo chmod 777 ./firmware
+sudo chmod 777 ./firmware/rtlwifi
+
+cp /rtl8723bs_nic.bin路径 ./firmware/rtlwifi
+```
+
+
