@@ -103,11 +103,13 @@ udhcpc -i wlan0
 > 固件将与编译教程仍在整理中, 将稍后一同开源
 
 **JLink 固件烧录**
-参见笔者另一个开源 [【RM2025-地表最小 JLink 开源】香港科技大学 ENTERPRIZE 战队](https://bbs.robomaster.com/article/760967) 中给出的固件以及烧录方法. JLink 固件也放在 ./Firmware/JLink
+参见笔者另一个开源 [【RM2025-地表最小 JLink 开源】香港科技大学 ENTERPRIZE 战队](https://bbs.robomaster.com/article/760967) 中给出的固件以及烧录方法.
 
 **TF 卡固件烧录**
-TF 卡要求: 容量 >= 512MB. 读写速度无要求.
-Linux 下直接用 dd 命令烧录 ./Firmware/V3S/TF.bin
+TF 卡要求: 容量 >= 256MByte. 读写速度无要求.
+提供完整的固件 dump, 在 ./Firmware/RM2025-WirelessJLink.zip 作为参考. 其 dts, Kernel 等部分可直接复制使用.
+Linux 下解压后直接用 dd 命令烧录 ./Firmware/RM2025-WirelessJLink.bin 到 TF 卡.
+注意烧录 ./Firmware/RM2025-WirelessJLink.bin 之后需要手动修改网卡 ID 才能正常联网. 具体可根据自动脚本联网时的报错信息自行搜索解决.
 
 # 固件编译
 请参考 [固件编译教程](./Docs/LinuxCompileGuide.md)
