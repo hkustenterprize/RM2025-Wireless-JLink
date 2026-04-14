@@ -70,7 +70,7 @@
 sudo apt install git wget make gcc flex bison libssl-dev bc kmod
 ```
 
-安装 **交叉编译工具链**. 编译平台架构是 x86_64, 与目标架构是 ARM 不同, 因此需要使用交叉编译器. 这一点与 STM32 开发同理, STM32 常见编译器有 Keil 的 ARM Compiler, gcc 系列的 arm-none-eabi- 工具链.  对于此处应用, 我们选择 **arm-linux-gnueabihf** 工具链. 工具链名称中 arm 代表目标架构是 arm, linux 代表可编译在 linux 操作系统上运行的二进制. 此编译器也可编译无操作系统的裸机程序. gnueabihf 全称为 The GNU C compiler for armhf architecture. armhf 中的 hf 意为 hardware floating point, 即硬件 浮点处理器(FPU). V3S 内部有 FPU, 所以我们应当选择 arm-linux-gnueabihf 而非 arm-linux-gnueabi(无法生成 FPU 相关指令)
+安装 **交叉编译工具链**. 编译平台架构是 x86_64, 与目标架构是 ARM 不同, 因此需要使用交叉编译器. 这一点与 STM32 开发同理, STM32 常见编译器有 Keil 的 ARM Compiler, gcc 系列的 arm-none-eabi- 工具链. 对于此处应用, 我们选择 **arm-linux-gnueabihf** 工具链. 工具链名称中 arm 代表目标架构是 arm, linux 代表可编译在 linux 操作系统上运行的二进制. 此编译器也可编译无操作系统的裸机程序. gnueabihf 全称为 The GNU C compiler for armhf architecture. armhf 中的 hf 意为 hardware floating point, 即硬件 浮点处理器(FPU). V3S 内部有 FPU, 所以我们应当选择 arm-linux-gnueabihf 而非 arm-linux-gnueabi(无法生成 FPU 相关指令)
 > 具体命名细节可参考 [CSDN 交叉编译器的命名规则及详细解释](https://blog.csdn.net/LEON1741/article/details/81537529)
 
 > **名词解释**
@@ -116,9 +116,9 @@ make ARCH=arm menuconfig
 什么是 menuconfig: 是一个基于 **文本界面** 的配置工具, 终端的字符由文本绘制而成. make 通过读取目录下 **Kconfig** 文件, 并根据 Kconfig 的描述内容生成一个图形化参数配置界面. 当保存退出之后, 配置文件会保存在目录下的 **.config** 文件中.
 - 使用上下左右方向键可移动光标, 回车进入, ESC 返回上一级菜单或退出.
 - 对于 checkbox 类型配置, 使用空格键切换启用功能或禁用功能:
-- [ ]/< >:  该功能未被启用。
-- [\*]/<\*>:  该功能将被编译进内核。
-- [M]:  该功能将被编译为独立的模块。
+- [ ]/< >: 该功能未被启用. 
+- [\*]/<\*>: 该功能将被编译进内核. 
+- [M]: 该功能将被编译为独立的模块. 
 
 ---
 
@@ -147,7 +147,7 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j8
 
 可以在 U-Boot 的 menuconfig 里设置这些启动参数, 但需要修改这些参数则需重新编译烧录 U-Boot 较为麻烦.
 
-我们在这里不修改 boot-args 和 boot-cmd, 我们选择生成一个 boot.scr 文件, 然后直接用文件管理器复制到制定分区, 而不作为 uboot 的一部分编译到 u-boot 里。 这两个参数是环境变量, 作用是告诉 uboot 在什么地址加载内核和文件树。U-Boot 会在你的第一启动分区（fat32/exfat）中寻找boot.scr文件, 作为启动参数选项。在这个文件中, 可以定义一些给内核传递的参数, 以及文件加载及启动的命令选项
+我们在这里不修改 boot-args 和 boot-cmd, 我们选择生成一个 boot.scr 文件, 然后直接用文件管理器复制到制定分区, 而不作为 uboot 的一部分编译到 u-boot 里. 这两个参数是环境变量, 作用是告诉 uboot 在什么地址加载内核和文件树. U-Boot 会在你的第一启动分区（fat32/exfat）中寻找boot.scr文件, 作为启动参数选项. 在这个文件中, 可以定义一些给内核传递的参数, 以及文件加载及启动的命令选项
 ```bash
 setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 earlyprintk rw
 load mmc 0:1 0x41000000 zImage
@@ -167,8 +167,8 @@ sudo apt-get install libncurses5-dev libncursesw5-dev
 
 共分三个部分: 
 1. 预留 10MB 的未分配空间, 用于存储 U-Boot. 需要使用 dd 命令将 U-Boot 直接写入指定区域. V3S 在启动过程中会读取固定的地址判断 TF 卡是否有可启动的固件.
-2. **第一分区**: 大小为 11MByte. FAT16 文件系统. 用于存储 boot.scr, linux kernel, .dtb 文件进来。
-3. **第二分区**: 剩余所有的是 EXT4 分区, 用于存储 rootfs。
+2. **第一分区**: 大小为 11MByte. FAT16 文件系统. 用于存储 boot.scr, linux kernel, .dtb. 
+3. **第二分区**: 剩余所有的是 EXT4 分区, 用于存储 rootfs. 
 
 注意, TF 卡分区过程中会清除所有数据. 请谨慎操作. 相关命令如下:
 
@@ -240,7 +240,7 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=out menuconfig
 ```
 
 1. 使能无线相关配置
-注意， 这两个在 licheepi_zero_defconfig 里是以 Module 形式存在的 `[M]` ， 我们把它打包进内核 `[*]`
+注意, 这两个在 licheepi_zero_defconfig 里是以 Module 形式存在的 `[M]` , 我们把它打包进内核 `[*]`
 ```
 Networking support
 	Wireless
@@ -249,8 +249,8 @@ Networking support
 ```
 
 2. 使能 rtl8723 驱动
-使用 licheepi_zero_defconfig 时已经使能了 rtl8723 驱动了。
-需要注意的是， rtl8723 必须以模块 Module 的形式编译，形成 .ko 文件， 然后手动复制到根文件系统, 并在启动后使用 insmod 加载.
+使用 licheepi_zero_defconfig 时已经使能了 rtl8723 驱动了. 
+需要注意的是, rtl8723 必须以模块 Module 的形式编译, 形成 .ko 文件, 然后手动复制到根文件系统, 并在启动后使用 insmod 加载.
 编译命令:
 
 ```bash
@@ -288,6 +288,8 @@ wget https://buildroot.org/downloads/buildroot-2019.08.tar.gz
 tar xvf buildroot-2019.08.tar.gz&&cd buildroot-2019.08/
 ```
 
+---
+
 **配置 Buildroot**
 ```bash
 make menuconfig
@@ -315,7 +317,7 @@ Target options  --->
 得到 6.3.1
 
 3. 查看 Linux kernel headers 版本： /opt/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include/linux/version.h
-查看到十进制的版本号为 262144，16 进制表达为 0x40600，则对应的内核版本号为4.6.0。
+查看到十进制的版本号为 262144, 16 进制表达为 0x40600, 则对应的内核版本号为4.6.0. 
 
 最后结果为：
 ```
@@ -336,9 +338,9 @@ Toolchain  --->
 ```
 
 3. **配置 System configuration**
-Init system：这里选择busybox，轻量级使用非常广泛。可选的有systemV,systemd.
+Init system：这里选择busybox, 轻量级使用非常广泛. 可选的有systemV,systemd.
 
-同时， 我们根据 buildroot 自带的 licheepi_zero_defconfig, 配置了串口
+同时, 我们根据 buildroot 自带的 licheepi_zero_defconfig, 配置了串口
 ```
 (RM2025) System hostname
 (xxx) System banner
@@ -354,7 +356,7 @@ Init system：这里选择busybox，轻量级使用非常广泛。可选的有sy
 
 4. **配置 Target package**
 
-我们想使用 udevadm 工具配置 jlink usb 驱动， 所以要把 eudev 打包进 buildroot。
+我们想使用 udevadm 工具配置 jlink usb 驱动, 所以要把 eudev 打包进 buildroot. 
 进行如下修改：
 
 ```
@@ -377,9 +379,33 @@ Target package
     ext2/3/4 variant (ext4)  --->
 ```
 
+
+6. 打开 wireless tools 和 wpa_supplicant, 使能 wpa_supplicant 所有功能以支持 Wifi 联网.
+
+```
+Target package
+	Networking applications
+		[*] wireless tools
+		[*] 	Install shared library
+
+		[*] wpa_supplicant
+		[*]   Enable nl80211 support (NEW)                
+		[*]   Enable AP mode                              
+		[*]     Enable Wi-Fi Display                      
+		[*]     Enable mesh networking                    
+		[*]   Enable autoscan
+		[*]   Enable EAP                       
+		[*]   Enable HS20
+		[*]   Enable syslog support
+		[*]   Enable WPS      
+		[*]   Install wpa_cli binary 
+		[*]   Install wpa_client shared library
+		[*]   Install wpa_passphrase binary 
+```
+
 ---
 
-配置完之后， 我们保存并退出 menuconfig. 执行 `make` 编译.
+配置完之后, 我们保存并退出 menuconfig. 执行 `make` 编译.
 注意 buildroot **不支持** 多线程编译. 在 intel 13900 平台上编译用时约 20min.
 编译完成后得到 ./output/images/rootfs.tar 我们把 rootfs.tar 解压到 TF 卡的第二分区:
 
@@ -424,4 +450,189 @@ sudo chmod 777 ./firmware/rtlwifi
 cp /rtl8723bs_nic.bin路径 ./firmware/rtlwifi
 ```
 
+---
 
+**复制 JLinkRemoteServer 到根文件系统**
+在 V3S 上运行 JLinkRemoteServerCLExe 依赖以下 dll：
+- libjlinkarm.so.7.98.8
+- libjlinkarm.so.7          --> libjlinkarm.so.7.98.8
+- libjlinkarm.so.         --> libjlinkarm.so.7.98.8
+
+也可能需要 99-jlink.rules, 通过 usbid 来指派驱动. 启动后, 使用 lsusb 查询是否连到了 JLink. 
+
+
+因此我们一共需要将如下的文件复制到 TF 卡的 /root/JLinkARM 文件夹
+```
+99-jlink_new.rules  JLinkRemoteServerCLExe  libjlinkarm.so    libjlinkarm.so.7.98.8
+99-jlink_ori.rules  libjlinkarm.so.7        99-jlink.rules
+```
+
+## Trouble Shooting
+
+编译 Buildroot 的时候报错 LD_LIBRARY_PATH. 是因为多了个空行.
+用 LD_LIBRARY_PATH= 清空这个变量就行. 然后重新编译 Buildroot.
+
+# 启动!
+经过上述步骤, TF 卡内已经有如下三个部分:
+1. 预留 10MB 的未分配空间, 存储了 U-Boot.
+2. **第一分区**: 存储了 boot.scr, linux kernel, .dtb.
+3. **第二分区**: 剩余所有的是 EXT4 分区, 用于存储根文件系统. 
+
+将 TF 卡插入板子, 上电即可启动. 在板子的 UART 口会打印 U-Boot 和 Linux 内核启动的信息:
+
+```
+U-Boot 2017.01-rc2-00057-g32ab1804cd (Sep 30 2024 - 18:54:30 +0800) Allwinner Technology
+
+CPU: Allwinner V3s (SUN8I 1681)
+Model: Lichee Pi Zero
+DRAM: 64 MiB
+MMC: SUNXI SD/MMC: 0
+
+...
+
+Starting kernel ...
+
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 5.2.0-licheepi-zero+ (baoqi@baoqi) (gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2)) #4 SMP Wed Oct 9 20:08:04 HKT 2024
+[    0.000000] CPU: ARMv7 Processor [410fc075] revision 5 (ARMv7), cr=10c5387d
+[    0.000000] CPU: div instructions available: patching division code
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt: Machine model: Lichee Pi Zero
+
+...
+
+
+Welcome to ENTERPRIZE buildroot.
+```
+
+如果一切正常, 会输出 Welcome to ENTERPRIZE buildroot. 并提供登录界面.
+根据内核配置, 账号为 root 密码为 baoqi
+
+启动之后, 我们需要逐步加载 Wifi 内核驱动, 启动 Wifi 服务, 最后启动 JLinkRemoteServer
+
+1. **加载内核驱动, 打开 wlan0**
+在启动之后使用命令 insmod /lib/modules/r8723bs.ko 加载驱动
+如下返回值就是成功：
+
+```
+# insmod /lib/modules/r8723bs.ko
+[   23.931169] r8723bs: module is from the staging directory, the quality is unknown, you have been warned.
+[   23.960507] RTL8723BS: module init start
+[   23.964447] RTL8723BS: rtl8723bs v4.3.5.5_12290.20140916_BTCOEX20140507-4E40
+[   23.971580] RTL8723BS: rtl8723bs BT-Coex version = BTCOEX20140507-4E40
+[   23.978244] RTL8723BS: module init ret =0
+```
+
+然后打开 wlan0：
+```bash
+ifconfig wlan0 up
+ifconfig
+```
+
+然后在 ifconfig 内就能看到 wlan0 正常工作了.
+
+---
+
+2. **修改位置, 连接WiFi**
+编辑 /etc/network/interfaces 文件为:
+```bash
+# Configure Loopback
+auto lo
+iface lo inet loopback
+# wlan0
+auto wlan0
+iface wlan0 inet dhcp
+```
+
+新建一个目录用来给 wpa_supplicant 通信
+```bash
+mkdir -p /var/run/wpa_supplicant
+```
+
+新建一个 .conf 文件, wpa_supplicant 连接 WIFI 的时候会从配置文件中读取账号和密码, 以及加密方式等, 所以我们再运行 wpa_supplicant 工具的时候要提前写好配置文件. 
+例如 /etc/wpa_supplicant.conf 填入
+```conf
+ctrl_interface=/var/run/wpa_supplicant
+ctrl_interface_group=0
+ap_scan=1
+network={
+    ssid="HKUST_ENTERPRIZE"
+    scan_ssid=1
+    key_mgmt=WPA-EAP WPA-PSK IEEE8021X NONE
+    pairwise=TKIP CCMP
+    group=CCMP TKIP WEP104 WEP40
+    psk="12345678"
+    priority=5
+}
+```
+
+然后, 使用如下命令链接 wifi
+```bash
+wpa_supplicant -B -c /etc/wpa_supplicant.conf -i wlan0
+```
+
+输出几个 udhcpc: sending discover 之后, 会得到
+```
+udhcpc: sending select for 192.168.1.231
+udhcpc: lease of 192.168.1.231 obtained, lease time 43200
+deleting routers
+adding dns 192.168.1.1
+```
+
+即为链接成功.
+
+---
+
+
+3. **运行 JLinkRemoteServer**
+```bash
+/root/JLinkARM/JLinkRemoteServerCLExe
+```
+
+产生如下输出即为成功:
+```
+SEGGER J-Link Remote Server V7.98h
+Compiled Sep 11 2024 14:33:29
+
+'q' to quit '?' for help
+
+
+Welcome to ENTERPRIZE buildroot.
+1970-01-01 00:00:14 - Remote Server started
+1970-01-01 00:00:14 - Connected to J-Link with S/N 771828605
+1970-01-01 00:00:14 - Waiting for client connections... 
+```
+
+## 自动启动脚本
+开机后, 我们希望自动连接网络, 自动打开 JLinkRemoteServer. 我们需要修改 /etc/inittab:
+```bash
+# 在 now run any rc scripts 后加入如下
+::sysinit:/etc/init.d/wirelessJLinkAutoScript.sh
+```
+
+在 /etc/init.d 目录下新建文件 wirelessJLinkAutoScript.sh 并写入:
+```bash
+#!/bin/sh
+insmod /lib/modules/r8723bs.ko
+ifconfig wlan0 up
+wpa_supplicant -B -c /etc/wpa_supplicant.conf -i wlan0
+sleep 3s
+udhcpc -i wlan0
+
+/root/JLinkARM/JLinkRemoteServerCLExe
+```
+
+尝试重启, 观察是否能成功自动运行.
+
+## 通过 Ozone 远程链接
+在启动后, 会打印类似 udhcpc: sending select for 192.168.1.231 的 IP. 我们通过此 IP 访问无线烧录器.
+在 Ozone 启动选择 Connections Settings 时, 将 Host Interface 选择为 IP, 并填入无线烧录器的 IP 地址即可链接.
+
+
+## Trouble Shooting
+如果 ifconfig wlan0 up 没有反应, 请切换到 dock 版本的设备树, dock 才有 wifi. 如果依然不行, 请检查 Wifi 模块硬件. DSI 上拉电阻必须焊上.
+
+如果 insmod /lib/modules/r8723bs.ko 报错 Unknown, 请在内核配置打开 wireless 相关配置, 重新编译内核并替换.
+
+如果报错 CONFIG_RFKILL, 在 Buildroot 使能 RFKILL 之后可解决.
